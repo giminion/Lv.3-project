@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/blog")
 //@Slf4j(topic = "Blog Controller") //로그 확인용
 public class BlogController {
 
@@ -22,31 +22,31 @@ public class BlogController {
     }
 
     // 전체 게시글 목록 조회 API
-    @GetMapping("/blog")
+    @GetMapping()
     public List<BlogResponseDto> getBlogs() {
         return blogService.getBlogs();
     }
 
     // 특정 게시물 조회
-    @GetMapping("/blog/{id}")
+    @GetMapping("/{id}")
     public BlogResponseDto getBlog(@PathVariable Long id){
         return blogService.getBlog(id);
     }
 
     // 게시글 작성 API
-    @PostMapping("/blog")
+    @PostMapping()
     public BlogResponseDto createBlog(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue, @RequestBody BlogRequestDto requestDto) {
         return blogService.createBlog(tokenValue, requestDto);
     }
 
     // 게시물 수정 API
-    @PutMapping("/blog/{id}")
+    @PutMapping("{id}")
     public BlogResponseDto updateBlog(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue, @PathVariable Long id, @RequestBody BlogRequestDto requestDto) {
         return blogService.updateBlog(tokenValue, id, requestDto);
     }
 
     // 게시물 삭제 API
-    @DeleteMapping("/blog/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<MessageResponseDto> deleteBlog(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue, @PathVariable Long id) {
         return blogService.deleteBlog(tokenValue, id);
     }

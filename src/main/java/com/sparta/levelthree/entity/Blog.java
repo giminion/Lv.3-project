@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity // JPA가 관리할 Entitu 클래스 저장
 @Getter
 @Table(name = "blog") //  매핑할 블로그 명 지정
@@ -18,16 +21,20 @@ public class Blog extends Timestamped {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name ="author", nullable = false)
-    private String author;
-
     @Column(name = "content", nullable = false, length = 500) // length의 디폴트는 255
     private String content;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public Blog(BlogRequestDto requestDto, String username) {
+    // blog 삭제시 comment가 같이 삭제되도록 cascade 추가
+    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
+
+    public Blog(BlogRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
-        this.author = username;
+        this.user = user;
         this.content = requestDto.getContent();
     }
 

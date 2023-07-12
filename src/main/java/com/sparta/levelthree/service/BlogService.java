@@ -83,9 +83,13 @@ public class BlogService {
         // username
         String username = info.getSubject();
 
-        if(!username.equals(blog.getAuthor())) {
+        if(!username.equals(blog.getUser().getUsername())) {
             throw new IllegalArgumentException("해당 게시물을 작성한 사용자가 아닙니다.");
         }
+
+        User currentUser = userRepository.findByUsername(info.getSubject()).orElseThrow(() -> new IllegalArgumentException("Not Find User"));
+        // user Auth check
+        checkUsername(blog, currentUser);
 
         // post 수정(영속성 컨텍스트의 변경감지를 통해, 즉, requestDto에 들어온 객체로 post 객체(entity)를 업데이트 시킴)
         blog.update(requestDto);
@@ -109,21 +113,28 @@ public class BlogService {
         // 토큰에서 사용자 정보 가져오기
         Claims info = jwtUtil.getUserInfoFromToken(token);
 
-        // username
-        String username = info.getSubject();
-
-        if(!username.equals(blog.getAuthor())) {
-            throw new IllegalArgumentException("해당 게시물을 작성한 사용자가 아닙니다.");
-        }
+        User currentUser = userRepository.findByUsername(info.getSubject()).orElseThrow(() -> new IllegalArgumentException("Not Find User"));
+        // user Auth check
+        checkUsername(blog, currentUser);
 
         blogRepository.delete(blog);
 
         return new ResponseEntity<MessageResponseDto>(new MessageResponseDto("게시물 삭제 성공", "200"), HttpStatus.OK);
     }
 
-    private Blog findBlog(Long id){
+    Blog findBlog(Long id){
         return blogRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 게시물은 존재하지 않습니다.")
         );
+    }
+
+    public void checkUsername (Blog blog, User user){
+        // admin 확인
+        if (!user.getRole().getAuthority().equals("ROLE_ADMIN")) {
+            // 작성자 본인 확인
+            if (!(blog.getUser().getId() == user.getId())) {
+                throw new IllegalArgumentException("작성자만 삭제/수정할 수 있습니다.");
+            }
+        }
     }
 }
